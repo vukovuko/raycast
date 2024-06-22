@@ -18,6 +18,30 @@ class Vector2 {
     mul(that: Vector2): Vector2 {
         return new Vector2(this.x * that.x, this.y * that.y);
     }
+
+    sub(that: Vector2): Vector2 {
+        return new Vector2(this.x - that.x, this.y - that.y);
+    }
+
+    add(that: Vector2): Vector2 {
+        return new Vector2(this.x + that.x, this.y + that.y);
+    }
+
+    norm(): Vector2 {
+        const length = this.length();
+        if (length == 0) {
+            return new Vector2(0, 0);
+        }
+        return new Vector2(this.x / length, this.y / length);
+    }
+
+    length(): number {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+
+    scale(value: number): Vector2 {
+        return new Vector2(this.x * value, this.y * value);
+    }
 }
 
 const GRID_ROWS = 10;
@@ -85,12 +109,15 @@ function grid(context: CanvasRenderingContext2D, point2: Vector2 | undefined) {
         fillCircle(context, point2, 0.1);
         context.strokeStyle = "magenta";
         strokeLine(context, point1, point2);
+        const point3 = rayStep(point1, point2);
+        fillCircle(context, point3, 0.1);
+        strokeLine(context, point2, point3);
     }
 }
 
 // Find the first intersection
 function rayStep(p1: Vector2, p2: Vector2): Vector2 {
-    return p2;
+    return p2.sub(p1).norm().add(p2);
 }
 
 function canvasSize(ctx: CanvasRenderingContext2D): Vector2 {

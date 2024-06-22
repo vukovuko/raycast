@@ -1,6 +1,3 @@
-const GRID_ROWS = 10;
-const GRID_COLS = 10;
-
 class Vector2 {
     x: number;
     y: number;
@@ -13,7 +10,19 @@ class Vector2 {
     array(): [number, number] {
         return [this.x, this.y];
     }
+
+    div(that: Vector2): Vector2 {
+        return new Vector2(this.x / that.x, this.y / that.y);
+    }
+
+    mul(that: Vector2): Vector2 {
+        return new Vector2(this.x * that.x, this.y * that.y);
+    }
 }
+
+const GRID_ROWS = 10;
+const GRID_COLS = 10;
+const GRID_SIZE = new Vector2(GRID_COLS, GRID_ROWS);
 
 window.addEventListener("DOMContentLoaded", () => {
     const canvas = document.getElementById("canvas") as HTMLCanvasElement | null;
@@ -27,6 +36,34 @@ window.addEventListener("DOMContentLoaded", () => {
     if (context === null) {
         throw new Error("No context found");
     }
+
+    let point2: Vector2 | undefined = undefined;
+    canvas.addEventListener("mousemove", (event: MouseEvent) => {
+        point2 = new Vector2(event.offsetX, event.offsetY)
+            .div(canvasSize(context))
+            .mul(new Vector2(GRID_COLS, GRID_ROWS));
+        grid(context, point2);
+        console.log(point2);
+    });
+
+    grid(context, point2);
+});
+
+function fillCircle(ctx: CanvasRenderingContext2D, center: Vector2, radius: number) {
+    ctx.beginPath();
+    ctx.arc(...center.array(), radius, 0, 2 * Math.PI);
+    ctx.fill();
+}
+
+function strokeLine(ctx: CanvasRenderingContext2D, p1: Vector2, p2: Vector2) {
+    ctx.beginPath();
+    ctx.moveTo(...p1.array());
+    ctx.lineTo(...p2.array());
+    ctx.stroke();
+}
+
+function grid(context: CanvasRenderingContext2D, point2: Vector2 | undefined) {
+    context.reset();
     context.fillStyle = "#181818";
     context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 
@@ -42,24 +79,20 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     const point1 = new Vector2(GRID_COLS * 0.43, GRID_ROWS * 0.33);
-    const point2 = new Vector2(GRID_COLS * 0.33, GRID_ROWS * 0.43);
     context.fillStyle = "magenta";
     fillCircle(context, point1, 0.1);
-    fillCircle(context, point2, 0.1);
-
-    context.strokeStyle = "magenta";
-    strokeLine(context, point1, point2);
-});
-
-function fillCircle(ctx: CanvasRenderingContext2D, center: Vector2, radius: number) {
-    ctx.beginPath();
-    ctx.arc(...center.array(), radius, 0, 2 * Math.PI);
-    ctx.fill();
+    if (point2 !== undefined) {
+        fillCircle(context, point2, 0.1);
+        context.strokeStyle = "magenta";
+        strokeLine(context, point1, point2);
+    }
 }
 
-function strokeLine(ctx: CanvasRenderingContext2D, p1: Vector2, p2: Vector2) {
-    ctx.beginPath();
-    ctx.moveTo(...p1.array());
-    ctx.lineTo(...p2.array());
-    ctx.stroke();
+// Find the first intersection
+function rayStep(p1: Vector2, p2: Vector2): Vector2 {
+    return p2;
+}
+
+function canvasSize(ctx: CanvasRenderingContext2D): Vector2 {
+    return new Vector2(ctx.canvas.width, ctx.canvas.height);
 }
